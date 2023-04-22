@@ -46,7 +46,7 @@ contract DeployScript is Script {
         vm.startBroadcast();
         address gameAddress = 0x0D1604e026197963002AD14650503F1c7b2904cD;
 
-        KingAttack attacker = new KingAttack{value: 0.01 ether}(payable(gameAddress));
+        new KingAttack{value: 0.01 ether}(payable(gameAddress));
         vm.stopBroadcast();
     }
 }
